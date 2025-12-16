@@ -4,7 +4,7 @@ const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Import routes
-//const bookingRoutes = require('./routes/booking.routes');
+const bookingRoutes = require('./routes/booking.routes');
 
 
 const app = express();
@@ -28,7 +28,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-//app.use('/api/bookings', bookingRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 
 // Error handling middleware (must be last)
