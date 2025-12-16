@@ -1,19 +1,16 @@
 const mongoose = require('mongoose');
+const startSeatReleaseScheduler = require('../utils/seatScheduler');
 
-let isConnected = false;
 
-async function connectDB() {
-  if (isConnected) {
-    console.log('MongoDB already connected');
-    return;
-  }
-
+const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     isConnected = true;
     console.log('MongoDB connected');
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
+    startSeatReleaseScheduler(15); // 15 min timeout
+
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
     process.exit(1);
   }
 }

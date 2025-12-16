@@ -6,11 +6,12 @@ async function startServer() {
   try {
     await connectDB(); // استخدام singleton
 
-    const PORT = process.env.PORT || 3000;
-    const server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
+// Start server
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 
     process.on('unhandledRejection', (err) => {
       console.error('Unhandled Rejection:', err);

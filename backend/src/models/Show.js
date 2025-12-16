@@ -11,8 +11,22 @@ const showSchema = new mongoose.Schema({
     ref: 'Hall',
     required: true
   },
-  startTime: Date,
-  endTime: Date,
+  startTime: {
+    type: Date,
+    required: true
+  },
+  endTime: {
+    type: Date,
+    required: true
+  },
+  bookedSeats: {
+    type: [String], // e.g. ["A1", "A2", "B5"]
+    default: []
+  },
+  price: {
+    type: Number,
+    required: true
+  },
   isActive: {
     type: Boolean,
     default: true

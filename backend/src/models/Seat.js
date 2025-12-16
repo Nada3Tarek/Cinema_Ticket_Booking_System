@@ -6,8 +6,13 @@ const seatSchema = new mongoose.Schema({
     ref: 'Show',
     required: true
   },
+  hallId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hall',
+    required: true
+  },
   seatNumber: {
-    type: String, // A1, B5, etc.
+    type: String, // A1, B5
     required: true
   },
   status: {
@@ -15,8 +20,17 @@ const seatSchema = new mongoose.Schema({
     enum: ['AVAILABLE', 'LOCKED', 'BOOKED'],
     default: 'AVAILABLE'
   },
-  lockedAt: Date
-});
+  lockedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  lockedAt: Date,
+  price: {
+    type: Number,
+    required: true
+  }
+}, { timestamps: true });
+
 
 seatSchema.index({ showId: 1, seatNumber: 1 }, { unique: true });
 
