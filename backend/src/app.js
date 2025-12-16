@@ -33,10 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 // ====================
 
 app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-  });
+  res.json({ success: true, message: 'Server is running' });
 });
 
 // ====================
@@ -57,10 +54,7 @@ app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-  });
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 // ====================

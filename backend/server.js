@@ -2,8 +2,9 @@ require('dotenv').config();
 const connectDB = require('./src/config/database');
 const app = require('./src/app');
 
-// Connect to database
-connectDB();
+async function startServer() {
+  try {
+    await connectDB(); // استخدام singleton
 
 // Start server
 const PORT = process.env.PORT || 3000;
@@ -12,11 +13,15 @@ const server = app.listen(PORT, () => {
 });
 
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
-  server.close(() => {
-    process.exit(1);
-  });
-});
+    process.on('unhandledRejection', (err) => {
+      console.error('Unhandled Rejection:', err);
+      server.close(() => process.exit(1));
+    });
 
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+startServer();
