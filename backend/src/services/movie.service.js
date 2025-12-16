@@ -1,6 +1,7 @@
 const Movie = require('../models/Movie');
 
 class MovieService {
+    
     static async createMovie(data) {
     const movie = await Movie.create(data);
     return movie;

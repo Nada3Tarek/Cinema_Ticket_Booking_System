@@ -1,6 +1,6 @@
 const SeatService = require('../services/seat.service');
+const Seat = require('../models/Seat');
 
-// Lock seats
 exports.lockSeats = async (req, res) => {
   try {
     const userId = req.user._id; // from auth middleware
@@ -12,6 +12,26 @@ exports.lockSeats = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// exports.lockSeats = async (req, res, next) => {
+//   try {
+//     const { showId, seatNumbers, lockedBy } = req.body;
+
+//     if (!lockedBy) {
+//       return res.status(400).json({ success: false, message: 'lockedBy is required' });
+//     }
+
+//     // your locking logic, e.g.:
+//     const seats = await Seat.updateMany(
+//       { showId, seatNumber: { $in: seatNumbers }, status: 'AVAILABLE' },
+//       { status: 'LOCKED', lockedAt: new Date(), lockedBy }
+//     );
+
+//     res.json({ success: true, message: 'Seats locked', seats });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 // Unlock seats (optional manual cancel)
 exports.unlockSeats = async (req, res) => {

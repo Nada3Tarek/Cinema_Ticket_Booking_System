@@ -1,25 +1,37 @@
+
+// src/app.js
+
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Import routes
-//const bookingRoutes = require('./routes/booking.routes');
+const movieRoutes = require('./routes/movie.routes');
+const showRoutes = require('./routes/show.routes');
+const hallRoutes = require('./routes/hall.routes');
+const seatRoutes = require('./routes/seat.routes');
 
+// Seat release scheduler
+const startSeatReleaseScheduler = require('./utils/seatScheduler');
 
 const app = express();
 
-// Middleware
+// ====================
+// MIDDLEWARES
+// ====================
+
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: 'http://localhost:4200', // adjust your frontend origin
   credentials: true,
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ====================
+// HEALTH CHECK
+// ====================
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -27,12 +39,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes
-//app.use('/api/bookings', bookingRoutes);
+// ====================
+// API ROUTES
+// ====================
 
+app.use('/api/movies', movieRoutes);
+app.use('/api/shows', showRoutes);
+app.use('/api/halls', hallRoutes);
+app.use('/api/seats', seatRoutes);
 
-// Error handling middleware (must be last)
-//app.use(errorHandler);
+// ====================
+// ERROR HANDLING
+// ====================
+
+// Must be after all routes
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
@@ -42,5 +63,10 @@ app.use((req, res) => {
   });
 });
 
-module.exports = app;
+// ====================
+// SEAT RELEASE SCHEDULER
+// ====================
 
+startSeatReleaseScheduler(15); // 15 min timeout for locked seats
+
+module.exports = app;
