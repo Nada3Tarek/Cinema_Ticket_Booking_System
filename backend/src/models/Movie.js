@@ -1,12 +1,33 @@
 const mongoose = require('mongoose');
 
+
 const movieSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  genre: [String],
-  language: String,
-  duration: Number, // minutes
-  releaseDate: Date,
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  genre: {
+    type: [String],
+    required: true
+  },
+  language: {
+    type: String,
+    required: true
+  },
+  duration: {
+    type: Number,
+    required: true // minutes
+  },
+  releaseDate: {
+    type: Date,
+    required: true
+  },
+  posterUrl: String,          // for UI
   rating: {
     type: Number,
     default: 0
@@ -16,5 +37,4 @@ const movieSchema = new mongoose.Schema({
     default: true
   }
 }, { timestamps: true });
-
 module.exports = mongoose.model('Movie', movieSchema);
