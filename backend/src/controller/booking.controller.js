@@ -1,5 +1,4 @@
-const BookingKeeper = require('./Facade-Pattern/BookingKeeper');
-
+const BookingKeeper = require('../services/booking.services/BookingKeeper');
 const bookingKeeper = new BookingKeeper();
 
 exports.reserveSeats = async (req, res) => {

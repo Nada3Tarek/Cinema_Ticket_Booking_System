@@ -1,4 +1,4 @@
-const Seat = require('../../../models/Seat');
+const Seat = require('../../models/Seat');
 
 class SeatAvailabilityBooking {
   async checkAvailability(showId, seatNumbers) {
