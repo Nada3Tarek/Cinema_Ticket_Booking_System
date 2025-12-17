@@ -10,6 +10,7 @@ const movieRoutes = require('./routes/movie.routes');
 const showRoutes = require('./routes/show.routes');
 const hallRoutes = require('./routes/hall.routes');
 const seatRoutes = require('./routes/seat.routes');
+const browseRoutes = require('./routes/browse.routes');
 
 // Seat release scheduler
 const startSeatReleaseScheduler = require('./utils/seatScheduler');
@@ -47,6 +48,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/shows', showRoutes);
 app.use('/api/halls', hallRoutes);
 app.use('/api/seats', seatRoutes);
+app.use('/api/browse', browseRoutes); 
 
 // ====================
 // ERROR HANDLING
