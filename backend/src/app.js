@@ -13,6 +13,9 @@ const seatRoutes = require('./routes/seat.routes');
 
 // Seat release scheduler
 const startSeatReleaseScheduler = require('./utils/seatScheduler');
+const reviewRoutes = require('./routes/ratingRoutes');
+const bookingRoutes = require('./routes/booking.routes');
+
 
 const app = express();
 
@@ -51,6 +54,14 @@ app.use('/api/seats', seatRoutes);
 
 // Must be after all routes
 app.use(errorHandler);
+// Mount review routes
+app.use('/api/reviews', reviewRoutes);
+// API Routes
+app.use('/api/bookings', bookingRoutes);
+
+
+// Error handling middleware (must be last)
+//app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
