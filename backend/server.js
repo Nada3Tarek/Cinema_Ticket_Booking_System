@@ -4,7 +4,7 @@ const app = require('./src/app');
 
 async function startServer() {
   try {
-    await connectDB(); // استخدام singleton
+    await connectDB(); 
 
 // Start server
 const PORT = process.env.PORT || 3000;
