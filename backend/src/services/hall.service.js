@@ -2,6 +2,14 @@ const Hall = require('../models/Hall');
 
 class HallService {
 
+   // ✅ List halls
+  static async getHalls({ includeInactive = false } = {}) {
+    const filter = includeInactive ? {} : { isActive: true };
+
+    const halls = await Hall.find(filter).sort({ createdAt: -1 });
+    return halls;
+  }
+
   // CREATE
   static async createHall(data) {
     const { rows, columns } = data;
