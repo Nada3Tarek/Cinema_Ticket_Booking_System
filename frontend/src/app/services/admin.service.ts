@@ -45,10 +45,12 @@ export class AdminService {
     );
   }
 
-  // Show Management
-  createShow(data: ShowCreateRequest): Observable<{ message: string; show: Show }> {
-    return this.http.post<{ message: string; show: Show }>(`${this.API_BASE}/shows`, data);
-  }
+createShow(data: ShowCreateRequest): Observable<{ message: string; show: Show }> {
+  return this.http.post<{ message: string; show: Show }>(
+    `${this.API_BASE}/shows`,
+    data
+  );
+}
 
   getHalls() {
     return this.http.get<{ data: Hall[] }>(`${this.API_BASE}/halls`, { withCredentials: true });

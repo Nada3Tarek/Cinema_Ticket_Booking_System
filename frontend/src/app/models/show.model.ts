@@ -4,7 +4,7 @@ import { Hall } from './hall.model';
 export interface Show {
   _id: string;
   movieId: string | Movie;
-  hallId: string | Hall;
+  hallId?: Hall;       // hall object instead of id
   startTime: string | Date;
   endTime: string | Date;
   bookedSeats: string[];
@@ -21,7 +21,7 @@ export interface ShowWithDetails extends Show {
 
 export interface ShowCreateRequest {
   movieId: string;
-  hallId: string;
+  hallName: string;     // now send hallName instead of hallId
   startTime: string | Date;
   endTime: string | Date;
   price: number;
@@ -29,9 +29,22 @@ export interface ShowCreateRequest {
 
 export interface ShowUpdateRequest {
   movieId?: string;
-  hallId?: string;
+  hallName?: string;
   startTime?: string | Date;
   endTime?: string | Date;
   price?: number;
 }
-
+export interface BrowseShowsFilters {
+  search?: string;
+  genre?: string | string[];
+  language?: string;
+  date?: string;
+  rating?: number;
+  showtime?: string;
+  hall?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  includeInactive?: boolean; // ← add this here
+}
