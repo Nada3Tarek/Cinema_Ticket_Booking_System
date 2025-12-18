@@ -1,141 +1,132 @@
 <div class="container" *ngIf="movie">
-    <div class="loading-spinner" *ngIf="loading">
-      <mat-spinner></mat-spinner>
-    </div>
-  
-    <div class="movie-header" *ngIf="!loading">
-      <img
-        [src]="movie.posterUrl || 'https://via.placeholder.com/300x450'"
-        [alt]="movie.title"
-        class="poster"
-      />
-  
-      <div class="movie-info">
-        <h1>{{ movie.title }}</h1>
-  
-        <div class="meta">
-          <span><mat-icon>schedule</mat-icon> {{ movie.duration }} min</span>
-          <span><mat-icon>language</mat-icon> {{ movie.language }}</span>
-          <span><mat-icon>star</mat-icon> {{ movie.rating | number: '1.1-1' }}</span>
-          <span><mat-icon>event</mat-icon> {{ movie.releaseDate | date }}</span>
-        </div>
-  
-         <div class="genres">
-           <mat-chip *ngFor="let genre of movie.genre">{{ genre }}</mat-chip>
-         </div>
-  
-        <p class="description">{{ movie.description }}</p>
+  <div class="loading-spinner" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div class="movie-header" *ngIf="!loading">
+    <img [src]="movie.posterUrl || 'https://via.placeholder.com/300x450'" [alt]="movie.title" class="poster" />
+
+    <div class="movie-info">
+      <h1>{{ movie.title }}</h1>
+
+      <div class="meta">
+        <span><mat-icon>schedule</mat-icon> {{ movie.duration }} min</span>
+        <span><mat-icon>language</mat-icon> {{ movie.language }}</span>
+        <span><mat-icon>star</mat-icon> {{ movie.rating | number: '1.1-1' }}</span>
+        <span><mat-icon>event</mat-icon> {{ movie.releaseDate | date }}</span>
       </div>
-    </div>
-  
-    <mat-divider></mat-divider>
-  
-    <!-- SHOWS -->
-    <section class="shows-section" *ngIf="shows.length > 0">
-      <h2>Available Showtimes</h2>
-  
-      <div class="shows-grid">
-        <mat-card *ngFor="let show of shows" class="show-card">
-          <mat-card-content>
-            <p><strong>Hall:</strong> {{ getHallName(show) }}</p>
-            <p><strong>Start:</strong> {{ show.startTime | date: 'short' }}</p>
-            <p><strong>End:</strong> {{ show.endTime | date: 'short' }}</p>
-            <p><strong>Price:</strong> ${{ show.price }}</p>
-  
-            <button
-              mat-raised-button
-              color="primary"
-              (click)="selectShow(show)"
-              [disabled]="!show.isActive"
-            >
-              Book Now
-            </button>
-          </mat-card-content>
-        </mat-card>
+
+      <div class="genres">
+        <mat-chip *ngFor="let genre of movie.genre">{{ genre }}</mat-chip>
       </div>
-    </section>
-  
-    <mat-divider></mat-divider>
-  
-    <!-- REVIEWS -->
-    <section class="reviews-section">
-      <h2>Reviews</h2>
-  
-      <button
-        mat-raised-button
-        color="primary"
-        *ngIf="authService.isAuthenticated() && !reviewFormVisible"
-        (click)="reviewFormVisible = true"
-      >
-        Write a Review
-      </button>
-  
-      <mat-card *ngIf="reviewFormVisible && authService.isAuthenticated()">
+
+      <p class="description">{{ movie.description }}</p>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- SHOWS -->
+  <section class="shows-section" *ngIf="shows.length > 0">
+    <h2>Available Showtimes</h2>
+
+    <div class="shows-grid">
+      <mat-card *ngFor="let show of shows" class="show-card">
         <mat-card-content>
-          <h3>Your Review</h3>
-  
-          <mat-form-field appearance="outline">
-            <mat-label>Rating</mat-label>
-            <mat-select [(ngModel)]="reviewForm.rating">
-              <mat-option *ngFor="let r of [5,4,3,2,1]" [value]="r">
-                {{ r }} Stars
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-  
-          <mat-form-field appearance="outline" style="width: 100%;">
-            <mat-label>Comment</mat-label>
-            <textarea
-              matInput
-              [(ngModel)]="reviewForm.comment"
-              rows="4"
-            ></textarea>
-          </mat-form-field>
-  
-          <div>
-            <button mat-raised-button color="primary" (click)="submitReview()">
-              Submit
-            </button>
-            <button mat-button (click)="reviewFormVisible = false">
-              Cancel
-            </button>
-          </div>
+          <p><strong>Hall:</strong> {{ getHallName(show) }}</p>
+          <p><strong>Start:</strong> {{ show.startTime | date: 'short' }}</p>
+          <p><strong>End:</strong> {{ show.endTime | date: 'short' }}</p>
+          <p><strong>Price:</strong> ${{ show.price }}</p>
+
+          <button mat-raised-button color="primary" (click)="selectShow(show)" [disabled]="!show.isActive">
+            Book Now
+          </button>
         </mat-card-content>
       </mat-card>
-  
-      <div class="reviews-list">
-        <mat-card *ngFor="let review of reviews" class="review-card">
-          <mat-card-header>
-            <mat-card-title>Rating: {{ review.rating }}/5</mat-card-title>
-            <mat-card-subtitle>
-              {{ review.createdAt | date }}
-            </mat-card-subtitle>
-          </mat-card-header>
-  
-          <mat-card-content>
-            <p>{{ review.comment }}</p>
-  
-            <div class="review-actions">
-              <button
-                mat-icon-button
-                (click)="likeReview(review._id)"
-                [disabled]="likedReviews.has(review._id)"
-              >
-                <mat-icon>thumb_up</mat-icon>
-                <span>{{ review.likeCount }}</span>
-              </button>
+    </div>
+  </section>
+
+  <mat-divider></mat-divider>
+
+  <!-- REVIEWS -->
+  <section class="reviews-section">
+    <h2>Reviews</h2>
+
+    <button mat-raised-button color="primary" *ngIf="authService.isAuthenticated() && !reviewFormVisible"
+      (click)="reviewFormVisible = true">
+      Write a Review
+    </button>
+
+    <mat-card *ngIf="reviewFormVisible && authService.isAuthenticated()">
+      <mat-card-content>
+        <h3>Your Review</h3>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Rating</mat-label>
+          <mat-select [(ngModel)]="reviewForm.rating">
+            <mat-option *ngFor="let r of [5,4,3,2,1]" [value]="r">
+              {{ r }} Stars
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Comment</mat-label>
+          <textarea matInput [(ngModel)]="reviewForm.comment" rows="4"></textarea>
+        </mat-form-field>
+
+        <div>
+          <button mat-raised-button color="primary" (click)="submitReview()">
+            Submit
+          </button>
+          <button mat-button (click)="reviewFormVisible = false">
+            Cancel
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="reviews-list">
+      <mat-card *ngFor="let review of reviews" class="review-card">
+        <mat-card-header>
+          <mat-card-title>Rating: {{ review.rating }}/5</mat-card-title>
+          <mat-card-subtitle>
+            {{ review.createdAt | date }}
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p>{{ review.comment }}</p>
+
+          <div class="review-actions">
+            <button mat-icon-button (click)="likeReview(review._id)" [disabled]="likedReviews.has(review._id)">
+              <mat-icon>thumb_up</mat-icon>
+              <span>{{ review.likeCount }}</span>
+            </button>
+          </div>
+
+          <div class="replies" *ngIf="review.replies?.length">
+            <h4>Replies</h4>
+            <div *ngFor="let reply of review.replies" class="reply">
+              <p>{{ reply.text }}</p>
+              <small>{{ reply.createdAt | date }}</small>
             </div>
-  
-            <div class="replies" *ngIf="review.replies?.length">
-              <h4>Replies</h4>
-              <div *ngFor="let reply of review.replies" class="reply">
-                <p>{{ reply.text }}</p>
-                <small>{{ reply.createdAt | date }}</small>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </section>
-  </div>
-  
+          </div>
+
+          <div *ngIf="authService.isAuthenticated()">
+            <mat-form-field appearance="outline" style="width: 100%;">
+              <mat-label>Reply</mat-label>
+              <input matInput [(ngModel)]="replyForm[review._id]" placeholder="Write a reply..." />
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="replyToReview(review._id, replyForm[review._id])"
+              [disabled]="!replyForm[review._id]">
+              Submit Reply
+            </button>
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+</div>
