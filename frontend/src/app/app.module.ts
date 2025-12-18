@@ -9,6 +9,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 // Angular Material
+import { MatDatepickerModule } from '@angular/material/datepicker';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -45,6 +47,7 @@ import { AdminGuard } from './guards/admin.guard';
 // Interceptors
 import { HttpInterceptorService } from './core/interceptors/http.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MatNativeDateModule } from '@angular/material/core';
 
 const routes: Routes = [
   { path: '', component: MovieListComponent },
@@ -91,9 +94,13 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
 
     // Material modules
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatToolbarModule,
     MatButtonModule,
     MatCardModule,
+    MatInputModule,
+
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
