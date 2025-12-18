@@ -1,0 +1,28 @@
+<div class="container">
+  <h1>My Bookings</h1>
+
+  <div class="loading-spinner" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && bookings.length === 0">
+    <p>No bookings found</p>
+  </div>
+
+  <mat-card *ngFor="let booking of bookings" class="booking-card">
+    <mat-card-header>
+      <mat-card-title>{{ booking.movieTitle }}</mat-card-title>
+      <mat-card-subtitle>{{ booking.hallName }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p><strong>Total Price:</strong> ${{ booking.totalPrice }}</p>
+      <p><strong>Status:</strong> 
+        <mat-chip [color]="getStatusColor(booking.status)">
+          {{ booking.status }}
+        </mat-chip>
+      </p>
+      <p><strong>Booked on:</strong> {{ booking.createdAt | date:'short' }}</p>
+    </mat-card-content>
+  </mat-card>
+</div>
+

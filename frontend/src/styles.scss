@@ -1,0 +1,124 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.seat-grid {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.seat-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.seat {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &.available {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.selected {
+    background-color: #2196f3;
+    color: white;
+  }
+
+  &.unavailable {
+    background-color: #f44336;
+    color: white;
+    cursor: not-allowed;
+  }
+
+  &.locked {
+    background-color: #ff9800;
+    color: white;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(.unavailable):not(.locked) {
+    transform: scale(1.1);
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.movie-card {
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.error-message {
+  color: #f44336;
+  margin: 10px 0;
+}
+
+.success-message {
+  color: #4caf50;
+  margin: 10px 0;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -1,0 +1,106 @@
+<div>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2>Halls Management</h2>
+    <button mat-raised-button color="primary" (click)="openCreateForm()">Create Hall</button>
+  </div>
+
+  <mat-card *ngIf="showCreateForm">
+    <mat-card-header>
+      <mat-card-title>Create Hall</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="createForm">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Rows</mat-label>
+          <input matInput type="number" formControlName="rows" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Columns</mat-label>
+          <input matInput type="number" formControlName="columns" required>
+        </mat-form-field>
+        <p *ngIf="createForm.value.rows && createForm.value.columns">
+          Total Seats: {{ calculateTotalSeats(createForm.value.rows, createForm.value.columns) }}
+        </p>
+        <div>
+          <button mat-raised-button color="primary" (click)="createHall()" [disabled]="createForm.invalid">Create</button>
+          <button mat-button (click)="showCreateForm = false">Cancel</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card *ngIf="editingHall">
+    <mat-card-header>
+      <mat-card-title>Edit Hall</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="editForm">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Rows</mat-label>
+          <input matInput type="number" formControlName="rows">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Columns</mat-label>
+          <input matInput type="number" formControlName="columns">
+        </mat-form-field>
+        <p *ngIf="editForm.value.rows && editForm.value.columns">
+          Total Seats: {{ calculateTotalSeats(editForm.value.rows, editForm.value.columns) }}
+        </p>
+        <div>
+          <button mat-raised-button color="primary" (click)="updateHall()" [disabled]="editForm.invalid">Update</button>
+          <button mat-button (click)="editingHall = null">Cancel</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <p *ngIf="halls.length === 0">No halls available. Create one to get started.</p>
+
+  <table mat-table [dataSource]="halls" class="mat-elevation-z8" *ngIf="halls.length > 0">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let hall">{{ hall.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="rows">
+      <th mat-header-cell *matHeaderCellDef>Rows</th>
+      <td mat-cell *matCellDef="let hall">{{ hall.rows }}</td>
+    </ng-container>
+    <ng-container matColumnDef="columns">
+      <th mat-header-cell *matHeaderCellDef>Columns</th>
+      <td mat-cell *matCellDef="let hall">{{ hall.columns }}</td>
+    </ng-container>
+    <ng-container matColumnDef="totalSeats">
+      <th mat-header-cell *matHeaderCellDef>Total Seats</th>
+      <td mat-cell *matCellDef="let hall">{{ hall.totalSeats || calculateTotalSeats(hall.rows, hall.columns) }}</td>
+    </ng-container>
+    <ng-container matColumnDef="isActive">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let hall">
+        <span>{{ hall.isActive ? 'Active' : 'Inactive' }}</span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let hall">
+        <button mat-icon-button (click)="openEditForm(hall)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteHall(hall)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+
