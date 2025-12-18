@@ -31,6 +31,21 @@ exports.editHall = async (req, res) => {
     });
   }
 };
+exports.getHalls = async (req, res) => {
+  try {
+    const includeInactive = req.user?.role === 'admin';
+
+    const halls = await HallService.getHalls({ includeInactive });
+
+    res.status(200).json({
+      success: true,
+      count: halls.length,
+      halls
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
 exports.removeHall = async (req, res) => {
   try {

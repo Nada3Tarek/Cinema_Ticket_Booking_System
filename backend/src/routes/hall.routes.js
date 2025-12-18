@@ -12,5 +12,6 @@ router.patch('/:hallId',
 router.delete('/:hallId', 
     requireAuth, isAdmin, 
     hallController.removeHall);
+router.get('/', requireAuth, isAdmin,hallController.getHalls);
 
 module.exports = router;
