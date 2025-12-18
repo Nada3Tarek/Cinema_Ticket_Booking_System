@@ -1,4 +1,5 @@
 const { Review, ReviewDecorator } = require('../models/review');
+const Movie = require('../models/Movie');
 
 class ReviewSortingStrategy {
   sort(reviews) { throw new Error('sort method should be implemented'); }
@@ -20,6 +21,7 @@ class ReviewService {
   async createReview(data) {
     const review = new Review(data);
     await review.save();
+    await this.updateMovieRating(review.movieId);
     const decorated = new ReviewDecorator(review);
     return decorated.getReviewDetails();
   }
@@ -51,6 +53,7 @@ class ReviewService {
     const decorated = new ReviewDecorator(review);
     decorated.addLike();
     await review.save();
+    await this.updateMovieRating(review.movieId);
     return decorated.getReviewDetails();
   }
 
@@ -62,6 +65,15 @@ class ReviewService {
     decorated.addReply(userId, text);
     await review.save();
     return decorated.getReviewDetails();
+  }
+
+   async updateMovieRating(movieId) {
+    const reviews = await Review.find({ movieId });
+    if (reviews.length === 0) return;
+
+    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+    await Movie.findByIdAndUpdate(movieId, { rating: avgRating });
   }
 }
 
