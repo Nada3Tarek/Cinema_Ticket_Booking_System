@@ -14,6 +14,9 @@ const hallRoutes = require('./routes/hall.routes');
 const seatRoutes = require('./routes/seat.routes');
 
 const startSeatReleaseScheduler = require('./utils/seatScheduler');
+const reviewRoutes = require('./routes/ratingRoutes');
+const bookingRoutes = require('./routes/booking.routes');
+
 
 const app = express();
 
@@ -53,6 +56,14 @@ app.use('/api/seats', seatRoutes);
 // ====================
 
 app.use(errorHandler);
+// Mount review routes
+app.use('/api/reviews', reviewRoutes);
+// API Routes
+app.use('/api/bookings', bookingRoutes);
+
+
+// Error handling middleware (must be last)
+//app.use(errorHandler);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
