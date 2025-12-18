@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const showController = require('../controller/show.controller');
-//const { isAdmin } = require('../middlewares/auth.middleware');
+const { requireAuth, isAdmin } = require('../middlewares/auth.middleware');
 
 router.post('/', 
-    //isAdmin, 
+    requireAuth, isAdmin, 
     showController.createShow);
 router.patch('/:showId',
-    // isAdmin, 
+    requireAuth, isAdmin, 
     showController.editShow);
 router.delete('/:showId', 
-    //isAdmin,
+    requireAuth, isAdmin,
     showController.removeShow);
 router.patch('/:showId/status', 
-    //isAdmin,
+    requireAuth, isAdmin,
     showController.setShowStatus);
 
 

@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const movieController = require('../controller/movie.controller');
-//const { isAdmin } = require('../middlewares/auth.middleware');
+const { requireAuth, isAdmin } = require('../middlewares/auth.middleware');
 
 // CRUD
 router.post('/', 
-  //  isAdmin, 
+    requireAuth, isAdmin, 
     movieController.createMovie);
 router.patch('/:movieId',
-    // isAdmin,
+      requireAuth, isAdmin,
       movieController.editMovie);
 router.delete('/:movieId', 
-   // isAdmin, 
+    requireAuth, isAdmin, 
     movieController.removeMovie);
 router.patch('/:movieId/status', 
-   // isAdmin, 
+    requireAuth, isAdmin, 
     movieController.setMovieStatus);
 
 module.exports = router;

@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const seatController = require('../controller/seat.controller');
-//const { isAuthenticated } = require('../middlewares/auth.middleware');
+const { requireAuth } = require('../middlewares/auth.middleware');
 
 router.post('/lock',
-    // isAuthenticated, 
+     requireAuth, 
      seatController.lockSeats);
 router.post('/unlock',
-    // isAuthenticated, 
+     requireAuth, 
       seatController.unlockSeats);
 router.post('/book', 
-    //isAuthenticated, 
+     requireAuth, 
     seatController.bookSeats);
 
 module.exports = router;

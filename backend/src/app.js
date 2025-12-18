@@ -1,17 +1,18 @@
-
 // src/app.js
 
 const express = require('express');
 const cors = require('cors');
-const errorHandler = require('./middlewares/errorHandler');
+const cookieParser = require('cookie-parser');
 
-// Import routes
+const errorHandler = require('./middlewares/errorHandler');
+const authRoutes = require('./routes/auth.routes');
+
+// Routes
 const movieRoutes = require('./routes/movie.routes');
 const showRoutes = require('./routes/show.routes');
 const hallRoutes = require('./routes/hall.routes');
 const seatRoutes = require('./routes/seat.routes');
 
-// Seat release scheduler
 const startSeatReleaseScheduler = require('./utils/seatScheduler');
 
 const app = express();
@@ -21,12 +22,13 @@ const app = express();
 // ====================
 
 app.use(cors({
-  origin: 'http://localhost:4200', // adjust your frontend origin
-  credentials: true,
+  origin: 'http://localhost:4200',
+  credentials: true
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ====================
 // HEALTH CHECK
@@ -40,6 +42,7 @@ app.get('/api/health', (req, res) => {
 // API ROUTES
 // ====================
 
+app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/shows', showRoutes);
 app.use('/api/halls', hallRoutes);
@@ -49,10 +52,8 @@ app.use('/api/seats', seatRoutes);
 // ERROR HANDLING
 // ====================
 
-// Must be after all routes
 app.use(errorHandler);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
@@ -61,6 +62,6 @@ app.use((req, res) => {
 // SEAT RELEASE SCHEDULER
 // ====================
 
-startSeatReleaseScheduler(15); // 15 min timeout for locked seats
+startSeatReleaseScheduler(15);
 
 module.exports = app;
