@@ -44,6 +44,7 @@ import { AdminGuard } from './guards/admin.guard';
 
 // Interceptors
 import { HttpInterceptorService } from './core/interceptors/http.interceptor';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 const routes: Routes = [
   { path: '', component: MovieListComponent },
@@ -111,7 +112,8 @@ const routes: Routes = [
       provide: HTTP_INTERCEPTORS,
       useClass: HttpInterceptorService,
       multi: true
-    }
+    },
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]
 })
