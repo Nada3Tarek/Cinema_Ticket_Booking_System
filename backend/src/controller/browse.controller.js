@@ -42,7 +42,7 @@ exports.browseMoviesWithShowtimes = async (req, res) => {
       sortBy: req.query.sortBy || 'releaseDate',
       sortOrder: req.query.sortOrder || 'desc',
       page: req.query.page || 1,
-      limit: req.query.limit || 10
+      limit: req.query.limit || 50
     };
 
     const result = await BrowseService.browseMoviesWithShowtimes(filters);

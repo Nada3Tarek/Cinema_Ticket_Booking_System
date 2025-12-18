@@ -184,4 +184,3 @@ export class ShowsAdminComponent implements OnInit {
     return hall.name || 'N/A';
   }
 }
-
