@@ -120,7 +120,7 @@
             </mat-form-field>
 
             <button mat-raised-button color="primary" (click)="replyToReview(review._id, replyForm[review._id])"
-              [disabled]="!replyForm[review._id]?.trim()">
+              [disabled]="!replyForm[review._id]">
               Submit Reply
             </button>
           </div>
