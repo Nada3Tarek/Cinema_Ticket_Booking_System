@@ -4,7 +4,9 @@ const bookingKeeper = new BookingKeeper();
 exports.reserveSeats = async (req, res) => {
   try {
     const { userId, showId, seats, totalPrice } = req.body;
+
     const result = await bookingKeeper.reserveSeats(userId, showId, seats, totalPrice);
+
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -13,8 +15,10 @@ exports.reserveSeats = async (req, res) => {
 
 exports.confirmBooking = async (req, res) => {
   try {
-    const { bookingId, paymentSuccess } = req.body;
-    const result = await bookingKeeper.confirmBooking(bookingId, paymentSuccess);
+    const { bookingId, userId, method, extra } = req.body;
+
+    const result = await bookingKeeper.confirmBooking(bookingId, userId, method, extra);
+
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -24,7 +28,9 @@ exports.confirmBooking = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.body;
+
     const result = await bookingKeeper.cancelBooking(bookingId);
+
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
