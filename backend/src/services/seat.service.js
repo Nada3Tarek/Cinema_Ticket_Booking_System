@@ -1,4 +1,5 @@
 const Seat = require('../models/Seat');
+const Booking = require('../models/Booking'); // add this
 
 class SeatService {
 

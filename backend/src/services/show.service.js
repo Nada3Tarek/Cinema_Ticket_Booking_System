@@ -65,6 +65,17 @@ class ShowService {
     return show;
   }
 
+  static async editShow(showId, data) {
+    const show = await Show.findByIdAndUpdate(showId, data, { new: true });
+    if (!show) throw new Error('Show not found');
+    return show;
+  }
+
+  static async removeShow(showId) {
+    const show = await Show.findByIdAndDelete(showId);
+    if (!show) throw new Error('Show not found');
+    return show;
+  }
 }
 
 module.exports = ShowService;
