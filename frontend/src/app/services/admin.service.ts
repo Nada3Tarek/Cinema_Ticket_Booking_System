@@ -50,6 +50,11 @@ export class AdminService {
     return this.http.post<{ message: string; show: Show }>(`${this.API_BASE}/shows`, data);
   }
 
+  getHalls() {
+    return this.http.get<{ data: Hall[] }>(`${this.API_BASE}/halls`, { withCredentials: true });
+  }
+  
+
   updateShow(showId: string, data: ShowUpdateRequest): Observable<{ message: string; show: Show }> {
     return this.http.patch<{ message: string; show: Show }>(`${this.API_BASE}/shows/${showId}`, data);
   }
