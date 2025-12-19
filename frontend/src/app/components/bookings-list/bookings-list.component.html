@@ -9,20 +9,22 @@
     <p>No bookings found</p>
   </div>
 
-  <mat-card *ngFor="let booking of bookings" class="booking-card">
-    <mat-card-header>
-      <mat-card-title>{{ booking.movieTitle }}</mat-card-title>
-      <mat-card-subtitle>{{ booking.hallName }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <p><strong>Total Price:</strong> ${{ booking.totalPrice }}</p>
-      <p><strong>Status:</strong> 
-        <mat-chip [color]="getStatusColor(booking.status)">
-          {{ booking.status }}
-        </mat-chip>
-      </p>
-      <p><strong>Booked on:</strong> {{ booking.createdAt | date:'short' }}</p>
-    </mat-card-content>
-  </mat-card>
+  <mat-card *ngFor="let booking of bookings" class="booking-card"
+          (click)="viewBooking(booking)"
+          [class.clickable]="booking.status === 'PENDING'">
+  <mat-card-header>
+    <mat-card-title>{{ booking.movieTitle }}</mat-card-title>
+    <mat-card-subtitle>{{ booking.hallName }}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <p><strong>Total Price:</strong> ${{ booking.totalPrice }}</p>
+    <p><strong>Status:</strong>
+      <mat-chip [color]="getStatusColor(booking.status)">{{ booking.status }}</mat-chip>
+    </p>
+    <p><strong>Booked on:</strong> {{ booking.createdAt | date:'short' }}</p>
+  </mat-card-content>
+</mat-card>
+
+
 </div>
 

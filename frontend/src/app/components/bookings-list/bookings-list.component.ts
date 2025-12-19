@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BookingService } from '../../services/booking.service';
 import { BookingListItem } from '../../models/booking.model';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-bookings-list',
@@ -14,7 +15,8 @@ export class BookingsListComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private errorHandler: ErrorHandlerService
+    private errorHandler: ErrorHandlerService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -49,5 +51,12 @@ export class BookingsListComponent implements OnInit {
         return '';
     }
   }
+  // BookingsListComponent
+viewBooking(booking: BookingListItem): void {
+  if (booking.status === 'PENDING') {
+    this.router.navigate(['/bookings', booking.bookingId]); // matches the route
+  }
+}
+
 }
 

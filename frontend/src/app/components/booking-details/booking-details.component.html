@@ -1,0 +1,20 @@
+<div class="container" *ngIf="booking">
+  <h1>Booking Details</h1>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ booking.movieTitle }}</mat-card-title>
+      <mat-card-subtitle>{{ booking.hallName }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p><strong>Total Price:</strong> ${{ booking.totalPrice }}</p>
+      <p><strong>Status:</strong> {{ booking.status }}</p>
+      <p><strong>Booked on:</strong> {{ booking.createdAt | date:'short' }}</p>
+    </mat-card-content>
+    <mat-card-actions *ngIf="booking.status === 'PENDING'" style="gap: 16px;">
+      <button mat-raised-button color="primary" (click)="confirmBooking()">Confirm</button>
+      
+      <button mat-raised-button color="warn" (click)="cancelBooking()">Cancel</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

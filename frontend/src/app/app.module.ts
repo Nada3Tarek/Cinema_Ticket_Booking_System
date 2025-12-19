@@ -39,6 +39,7 @@ import { AdminComponent } from './components/admin/admin.component';
 import { MoviesAdminComponent } from './components/admin/movies/movies-admin.component';
 import { ShowsAdminComponent } from './components/admin/shows/shows-admin.component';
 import { HallsAdminComponent } from './components/admin/halls/halls-admin.component';
+import { BookingDetailsComponent } from './components/booking-details/booking-details.component';
 
 // Guards
 import { AuthGuard } from './guards/auth.guard';
@@ -56,6 +57,10 @@ const routes: Routes = [
   { path: 'movies/:id', component: MovieDetailsComponent },
   { path: 'booking/:id', component: BookingComponent, canActivate: [AuthGuard] },
   { path: 'bookings', component: BookingsListComponent, canActivate: [AuthGuard] },
+  { path: 'bookings/:id', 
+      loadComponent: () => import('./components/booking-details/booking-details.component').then(m => m.BookingDetailsComponent),
+      canActivate: [AuthGuard]
+    },
   {
     path: 'admin',
     component: AdminComponent,
