@@ -3,11 +3,12 @@ const handleErrors = require('../utils/handleErrors');
 
 module.exports.signup_post = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, adminKey } = req.body;
 
     const { user, token } = await authService.signup({
       email,
       password,
+      adminKey
     });
 
     res.cookie('jwt', token, {
@@ -23,11 +24,10 @@ module.exports.signup_post = async (req, res) => {
       }
     });
   } catch (err) {
-  console.error('SIGNUP ERROR 👉', err);
-  const errors = handleErrors(err);
-  res.status(400).json({ errors });
+    console.error('SIGNUP ERROR 👉', err);
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
   }
-
 };
 
 module.exports.login_post = async (req, res) => {

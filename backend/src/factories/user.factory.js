@@ -1,8 +1,11 @@
 class UserFactory {
-  static createUser(role, data) {
+  static createUser({ email, password, adminKey }) {
+    const isAdmin = adminKey === process.env.ADMIN_SECRET;
+
     return {
-      ...data,
-      role
+      email,
+      password,
+      role: isAdmin ? 'ADMIN' : 'CUSTOMER'
     };
   }
 }
