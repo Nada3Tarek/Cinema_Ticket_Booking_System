@@ -1,0 +1,109 @@
+<div class="container">
+  <div class="loading-spinner" *ngIf="loading && step === 'select'">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="show && hall && !loading">
+    <h1>Book Seats</h1>
+    <div class="show-info">
+      <p><strong>Movie:</strong> {{ getMovieTitle() }}</p>
+      <p><strong>Hall:</strong> {{ hall.name }}</p>
+      <p><strong>Time:</strong> {{ show.startTime | date:'short' }}</p>
+      <p><strong>Price per seat:</strong> ${{ show.price }}</p>
+    </div>
+
+    <div *ngIf="step === 'select'">
+      <h2>Select Seats</h2>
+      <div class="screen">SCREEN</div>
+      
+      <div class="seat-grid">
+        <div class="seat-row" *ngFor="let row of seatLayout; let rowIndex = index">
+          <span class="row-label">{{ getRowLabel(rowIndex) }}</span>
+          <button
+            *ngFor="let seat of row"
+            class="seat"
+            [class.available]="seat.status === 'AVAILABLE'"
+            [class.selected]="selectedSeats.has(seat.seatNumber)"
+            [class.unavailable]="seat.status === 'BOOKED'"
+            [disabled]="seat.status === 'BOOKED'"
+            (click)="toggleSeat(seat.seatNumber)">
+            {{ seat.seatNumber }}
+          </button>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="seat available"></div>
+          <span>Available</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat selected"></div>
+          <span>Selected</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat unavailable"></div>
+          <span>Booked</span>
+        </div>
+      </div>
+
+      <div class="summary">
+        <p><strong>Selected Seats:</strong> {{ selectedSeats.size }}</p>
+        <p><strong>Total Price:</strong> ${{ totalPrice }}</p>
+        <button mat-raised-button color="primary" (click)="proceedToPayment()" [disabled]="selectedSeats.size === 0">
+          Proceed to Payment
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="step === 'payment'">
+      <h2>Payment</h2>
+      <mat-card>
+        <mat-card-content>
+          <p><strong>Selected Seats:</strong> {{ getSelectedSeatsList() }}</p>
+          <p><strong>Total Price:</strong> ${{ totalPrice }}</p>
+
+          <form [formGroup]="paymentForm">
+            <mat-form-field appearance="outline">
+              <mat-label>Payment Method</mat-label>
+              <mat-select formControlName="method">
+                <mat-option value="CARD">Card</mat-option>
+                <mat-option value="WALLET">Wallet</mat-option>
+                <mat-option value="CASH">Cash</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div *ngIf="paymentForm.get('method')?.value === 'CARD'">
+              <mat-form-field appearance="outline">
+                <mat-label>Card Number</mat-label>
+                <input matInput formControlName="cardNumber" placeholder="1234 5678 9012 3456">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Card Holder</mat-label>
+                <input matInput formControlName="cardHolder">
+              </mat-form-field>
+              <div style="display: flex; gap: 16px;">
+                <mat-form-field appearance="outline">
+                  <mat-label>Expiry Date</mat-label>
+                  <input matInput formControlName="expiryDate" placeholder="MM/YY">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>CVV</mat-label>
+                  <input matInput formControlName="cvv" type="password" maxlength="3">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="payment-actions">
+              <button mat-raised-button color="primary" (click)="confirmBooking()" [disabled]="loading || paymentForm.invalid">
+                Confirm Booking
+              </button>
+              <button mat-button (click)="cancelBooking()" [disabled]="loading">Cancel</button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

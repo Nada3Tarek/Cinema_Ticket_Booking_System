@@ -1,31 +1,97 @@
 const HallService = require('../services/hall.service');
 
-// Create hall
 exports.createHall = async (req, res) => {
   try {
     const hall = await HallService.createHall(req.body);
-    res.status(201).json({ message: 'Hall created successfully', hall });
+    res.status(201).json({
+      success: true,
+      message: 'Hall created successfully',
+      hall
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-// Edit hall
 exports.editHall = async (req, res) => {
   try {
     const hall = await HallService.editHall(req.params.hallId, req.body);
-    res.status(200).json({ message: 'Hall updated successfully', hall });
+    res.status(200).json({
+      success: true,
+      message: 'Hall updated successfully',
+      hall
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+exports.getHalls = async (req, res) => {
+  try {
+    const includeInactive = req.user?.role === 'admin';
+
+    const halls = await HallService.getHalls({ includeInactive });
+
+    res.status(200).json({
+      success: true,
+      count: halls.length,
+      halls
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// Remove hall
 exports.removeHall = async (req, res) => {
   try {
     const hall = await HallService.removeHall(req.params.hallId);
-    res.status(200).json({ message: 'Hall removed successfully', hall });
+    res.status(200).json({
+      success: true,
+      message: 'Hall removed successfully',
+      hall
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+// Get available halls for a given date and time
+exports.getAvailableHalls = async (req, res) => {
+  try {
+    const { date, startTime, endTime } = req.query;
+
+    if (!date || !startTime || !endTime) {
+      return res.status(400).json({ error: 'date, startTime, and endTime are required' });
+    }
+
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    // Find shows that overlap with this time
+    const conflictingShows = await Show.find({
+      $or: [
+        { startTime: { $lt: end, $gte: start } },
+        { endTime: { $gt: start, $lte: end } },
+        { startTime: { $lte: start }, endTime: { $gte: end } }
+      ]
+    }).select('hallId');
+
+    const occupiedHallIds = conflictingShows.map(show => show.hallId);
+
+    // Return halls that are NOT occupied
+    const availableHalls = await Hall.find({ _id: { $nin: occupiedHallIds } }).lean();
+
+    res.status(200).json({ data: availableHalls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+

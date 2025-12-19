@@ -5,12 +5,15 @@ const BookingCreationBooking = require('./BookingCreationBooking');
 const SeatAvailabilityBooking = require('./SeatAvailabilityBooking');
 const SeatService = require('../seat.service'); 
 const { isBookingExpired } = require('../../utils/bookingExpiry');
+const PaymentService = require('../payment.services/PaymentService');
+const paymentService = new PaymentService();
 
 class BookingKeeper {
   constructor() {
     this.seatAvailability = new SeatAvailabilityBooking();
     this.bookingCreation = new BookingCreationBooking();
     this.seatService = SeatService;
+    this.paymentService = paymentService;
   }
 
   async reserveSeats(userId, showId, seatIds, totalPrice) {
@@ -25,7 +28,16 @@ class BookingKeeper {
     if (seats.length !== seatIds.length) {
       throw new Error('Some seats do not exist for this show');
     }
+  const calculatedTotal = seats.reduce(
+      (sum, seat) => sum + seat.price,
+      0
+    );
 
+    if (calculatedTotal !== totalPrice) {
+      throw new Error(
+        `Invalid total price. Expected ${calculatedTotal}, received ${totalPrice}`
+      );
+    }
     await this.seatAvailability.checkAvailability(showId, seatIds);
 
     await this.seatService.lockSeats({ seatIds, userId });
@@ -38,9 +50,7 @@ class BookingKeeper {
   }
 
 
-async confirmBooking(bookingId, paymentSuccess) {
-
-  if (!paymentSuccess) throw new Error('Payment not successful');
+async confirmBooking(bookingId, userId, method, extra = {}) {
 
   const booking = await this.bookingCreation.getBookingById(bookingId);
   if (!booking) throw new Error('Booking not found');
@@ -48,12 +58,27 @@ async confirmBooking(bookingId, paymentSuccess) {
   if (booking.status !== 'PENDING')
     throw new Error(`Cannot confirm ${booking.status} booking`);
 
- 
+
   if (isBookingExpired(booking)) {
     await this.bookingCreation.expireBooking(bookingId);
     await this.seatService.unlockSeats(booking.seats);
     throw new Error('Booking expired');
   }
+  const ALLOWED_METHODS = ["CARD", "WALLET", "CASH"];
+
+  if (!ALLOWED_METHODS.includes(method)) {
+    throw new Error(`Invalid payment method: ${method}`);
+  }
+
+  const payRes = await this.paymentService.processPayment({
+    bookingId,
+    userId,
+    method,                 // CARD | WALLET | CASH
+    amount: booking.totalPrice,
+    extra                  // optional card data
+  });
+
+  if (!payRes.success) throw new Error('Payment not successful');
 
   await this.seatService.bookSeats(booking.seats, booking.userId);
   return await this.bookingCreation.confirmBooking(bookingId);
@@ -95,7 +120,7 @@ async cancelBooking(bookingId) {
 
   // Get details of a specific booking
   async getBookingDetails(bookingId) {
-    const booking = await this.bookingCreation.getBookingById(bookingId);
+    const booking = await this.bookingCreation.getBookingDetails(bookingId);
     if (!booking) throw new Error('Booking not found');
 
     return booking;

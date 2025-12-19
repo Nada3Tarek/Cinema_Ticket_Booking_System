@@ -15,7 +15,6 @@ const hallSchema = new mongoose.Schema({
   },
   totalSeats: {
     type: Number,
-    required: true
   },
   isActive: {
     type: Boolean,

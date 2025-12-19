@@ -1,0 +1,29 @@
+<mat-toolbar color="primary">
+  <span routerLink="/" style="cursor: pointer;">Cinema Booking</span>
+  <span class="spacer"></span>
+  
+  <ng-container *ngIf="currentUser$ | async as user; else notLoggedIn">
+    <button mat-button routerLink="/bookings" *ngIf="user.role === 'CUSTOMER'">
+      <mat-icon>confirmation_number</mat-icon>
+      My Bookings
+    </button>
+    <button mat-button routerLink="/admin" *ngIf="user.role === 'ADMIN'">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Admin Panel
+    </button>
+    <button mat-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+    <span>{{ user.email }}</span>
+  </ng-container>
+  
+  <ng-template #notLoggedIn>
+    <button mat-button routerLink="/login">Login</button>
+    <button mat-button routerLink="/signup">Sign Up</button>
+  </ng-template>
+</mat-toolbar>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
