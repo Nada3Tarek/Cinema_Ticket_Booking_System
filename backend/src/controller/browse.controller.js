@@ -1,6 +1,5 @@
 const BrowseService = require('../services/browse.service');
 
-
 exports.browseMovies = async (req, res) => {
   try {
     const filters = {
@@ -11,6 +10,7 @@ exports.browseMovies = async (req, res) => {
       rating: req.query.rating,
       showtime: req.query.showtime,
       hall: req.query.hall,
+      includeInactive: req.query.includeInactive, 
       sortBy: req.query.sortBy || 'releaseDate',
       sortOrder: req.query.sortOrder || 'desc',
       page: req.query.page || 1,
@@ -39,10 +39,11 @@ exports.browseMoviesWithShowtimes = async (req, res) => {
       rating: req.query.rating,
       showtime: req.query.showtime,
       hall: req.query.hall,
+      includeInactive: req.query.includeInactive, 
       sortBy: req.query.sortBy || 'releaseDate',
       sortOrder: req.query.sortOrder || 'desc',
       page: req.query.page || 1,
-      limit: req.query.limit || 50
+      limit: req.query.limit || 10
     };
 
     const result = await BrowseService.browseMoviesWithShowtimes(filters);
@@ -56,11 +57,11 @@ exports.browseMoviesWithShowtimes = async (req, res) => {
   }
 };
 
-
 exports.getUpcomingMovies = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const result = await BrowseService.getUpcomingMovies(limit);
+    const includeInactive = req.query.includeInactive === 'false' || req.query.includeInactive === false ? false : true;
+    const result = await BrowseService.getUpcomingMovies(limit, includeInactive);
     res.status(200).json({
       success: true,
       data: result.movies,
@@ -74,7 +75,8 @@ exports.getUpcomingMovies = async (req, res) => {
 exports.getCurrentlyRunningMovies = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const result = await BrowseService.getCurrentlyRunningMovies(limit);
+    const includeInactive = req.query.includeInactive === 'false' || req.query.includeInactive === false ? false : true;
+    const result = await BrowseService.getCurrentlyRunningMovies(limit, includeInactive);
     res.status(200).json({
       success: true,
       data: result.movies,
