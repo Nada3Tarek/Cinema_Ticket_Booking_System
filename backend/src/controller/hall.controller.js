@@ -62,4 +62,36 @@ exports.removeHall = async (req, res) => {
     });
   }
 };
+// Get available halls for a given date and time
+exports.getAvailableHalls = async (req, res) => {
+  try {
+    const { date, startTime, endTime } = req.query;
+
+    if (!date || !startTime || !endTime) {
+      return res.status(400).json({ error: 'date, startTime, and endTime are required' });
+    }
+
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    // Find shows that overlap with this time
+    const conflictingShows = await Show.find({
+      $or: [
+        { startTime: { $lt: end, $gte: start } },
+        { endTime: { $gt: start, $lte: end } },
+        { startTime: { $lte: start }, endTime: { $gte: end } }
+      ]
+    }).select('hallId');
+
+    const occupiedHallIds = conflictingShows.map(show => show.hallId);
+
+    // Return halls that are NOT occupied
+    const availableHalls = await Hall.find({ _id: { $nin: occupiedHallIds } }).lean();
+
+    res.status(200).json({ data: availableHalls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
 

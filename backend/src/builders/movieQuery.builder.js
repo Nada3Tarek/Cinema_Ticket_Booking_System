@@ -1,21 +1,22 @@
-
 const { FilterStrategyFactory } = require('../strategies/filter.strategy');
 const Movie = require('../models/Movie');
 const Show = require('../models/Show');
 
 class MovieQueryBuilder {
-  constructor() {
-    this.movieQuery = { isActive: true };
-    this.showQuery = { isActive: true };
+  constructor(includeInactive = true) {
+   
+    this.movieQuery = includeInactive ? {} : { isActive: true };
+    this.showQuery = includeInactive ? {} : { isActive: true };
     this.searchTerm = null;
     this.sortBy = 'releaseDate';
-    this.sortOrder = -1;
+    this.sortOrder = -1; // -1 for descending, 1 for ascending
     this.page = 1;
     this.limit = 10;
     this.populateOptions = [];
+    this.includeInactive = includeInactive;
   }
 
-  
+
   search(term) {
     if (term) {
       this.searchTerm = term;
@@ -23,7 +24,7 @@ class MovieQueryBuilder {
     return this;
   }
 
-  
+
   filter(filterType, value) {
     const strategy = FilterStrategyFactory.getStrategy(filterType);
     if (strategy) {
@@ -38,8 +39,7 @@ class MovieQueryBuilder {
     return this;
   }
 
- 
-  filters(filters) {
+    filters(filters) {
     Object.keys(filters).forEach(key => {
       if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
         this.filter(key, filters[key]);
@@ -48,21 +48,21 @@ class MovieQueryBuilder {
     return this;
   }
 
-  
+
   sort(field, order = 'desc') {
     this.sortBy = field;
     this.sortOrder = order === 'asc' ? 1 : -1;
     return this;
   }
 
-  
+
   paginate(page = 1, limit = 10) {
     this.page = Math.max(1, parseInt(page));
     this.limit = Math.max(1, Math.min(100, parseInt(limit))); 
     return this;
   }
 
-  
+ 
   populate(fields) {
     if (Array.isArray(fields)) {
       this.populateOptions = fields;
@@ -72,11 +72,11 @@ class MovieQueryBuilder {
     return this;
   }
 
-  
+
   async build() {
     let query = Movie.find(this.movieQuery);
 
-  
+   
     if (this.searchTerm) {
       query = query.find({
         $or: [
@@ -92,19 +92,18 @@ class MovieQueryBuilder {
       query = query.find({ _id: { $in: shows } });
     }
 
-    
+ 
     query = query.sort({ [this.sortBy]: this.sortOrder });
 
     const skip = (this.page - 1) * this.limit;
     query = query.skip(skip).limit(this.limit);
 
-    this.populateOptions.forEach(option => {
+     this.populateOptions.forEach(option => {
       query = query.populate(option);
     });
 
-   const movies = await query.exec();
+    const movies = await query.exec();
 
-   
     let countQuery = Movie.find(this.movieQuery);
     if (this.searchTerm) {
       countQuery = countQuery.find({
@@ -137,12 +136,15 @@ class MovieQueryBuilder {
   async buildWithShows() {
     const result = await this.build();
     
-  
+    
     const moviesWithShows = await Promise.all(
       result.movies.map(async (movie) => {
-        let showQuery = { movieId: movie._id, isActive: true };
+        let showQuery = { movieId: movie._id };
+        if (!this.includeInactive) {
+          showQuery.isActive = true;
+        }
         
-  
+        
         if (this.showQuery.startTime) {
           showQuery.startTime = this.showQuery.startTime;
         }
@@ -168,9 +170,29 @@ class MovieQueryBuilder {
   }
 
   
+  includeInactive(include = true) {
+    this.includeInactive = include;
+    if (!include) {
+      
+      if (!this.movieQuery.hasOwnProperty('isActive')) {
+        this.movieQuery.isActive = true;
+      }
+      if (!this.showQuery.hasOwnProperty('isActive')) {
+        this.showQuery.isActive = true;
+      }
+    } else {
+      
+      delete this.movieQuery.isActive;
+      delete this.showQuery.isActive;
+    }
+    return this;
+  }
+
+  
   reset() {
-    this.movieQuery = { isActive: true };
-    this.showQuery = { isActive: true };
+    
+    this.movieQuery = this.includeInactive ? {} : { isActive: true };
+    this.showQuery = this.includeInactive ? {} : { isActive: true };
     this.searchTerm = null;
     this.sortBy = 'releaseDate';
     this.sortOrder = -1;

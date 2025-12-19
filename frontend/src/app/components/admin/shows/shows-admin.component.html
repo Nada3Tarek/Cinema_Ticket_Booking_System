@@ -1,108 +1,253 @@
 <div>
+  <!-- HEADER -->
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
     <h2>Shows Management</h2>
     <button mat-raised-button color="primary" (click)="openCreateForm()">Create Show</button>
   </div>
 
+  <!-- ================= CREATE SHOW ================= -->
   <mat-card *ngIf="showCreateForm">
     <mat-card-header>
       <mat-card-title>Create Show</mat-card-title>
     </mat-card-header>
+
     <mat-card-content>
-      <form [formGroup]="createForm">
+      <form [formGroup]="createForm" class="form-grid">
+
+        <!-- Movie -->
         <mat-form-field appearance="outline">
           <mat-label>Movie</mat-label>
           <mat-select formControlName="movieId" required>
             <mat-option *ngFor="let movie of movies" [value]="movie._id">{{ movie.title }}</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Hall ID</mat-label>
-          <input matInput formControlName="hallId" required>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Start Time</mat-label>
-          <input matInput type="datetime-local" formControlName="startTime" required>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>End Time</mat-label>
-          <input matInput type="datetime-local" formControlName="endTime" required>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Price</mat-label>
-          <input matInput type="number" formControlName="price" required>
-        </mat-form-field>
-        <div>
-          <button mat-raised-button color="primary" (click)="createShow()" [disabled]="createForm.invalid">Create</button>
-          <button mat-button (click)="showCreateForm = false">Cancel</button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
 
-  <mat-card *ngIf="editingShow">
-    <mat-card-header>
-      <mat-card-title>Edit Show</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="editForm">
+        <!-- Hall -->
         <mat-form-field appearance="outline">
-          <mat-label>Movie</mat-label>
-          <mat-select formControlName="movieId">
-            <mat-option *ngFor="let movie of movies" [value]="movie._id">{{ movie.title }}</mat-option>
+          <mat-label>Hall</mat-label>
+          <mat-select formControlName="hallName" required>
+            <mat-option *ngFor="let hall of halls" [value]="hall.name">{{ hall.name }}</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- Start Date -->
         <mat-form-field appearance="outline">
-          <mat-label>Hall ID</mat-label>
-          <input matInput formControlName="hallId">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
         </mat-form-field>
+
+        <!-- Start Time -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <mat-form-field appearance="outline">
+            <mat-label>Hour</mat-label>
+            <mat-select formControlName="startHour">
+              <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Minute</mat-label>
+            <mat-select formControlName="startMinute">
+              <mat-option *ngFor="let m of minutes" [value]="m">{{ m < 10 ? '0' + m : m }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>AM/PM</mat-label>
+            <mat-select formControlName="startAmPm">
+              <mat-option *ngFor="let ap of amPm" [value]="ap">{{ ap }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- End Date -->
         <mat-form-field appearance="outline">
-          <mat-label>Start Time</mat-label>
-          <input matInput type="datetime-local" formControlName="startTime">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
         </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>End Time</mat-label>
-          <input matInput type="datetime-local" formControlName="endTime">
-        </mat-form-field>
+
+        <!-- End Time -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <mat-form-field appearance="outline">
+            <mat-label>Hour</mat-label>
+            <mat-select formControlName="endHour">
+              <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Minute</mat-label>
+            <mat-select formControlName="endMinute">
+              <mat-option *ngFor="let m of minutes" [value]="m">{{ m < 10 ? '0' + m : m }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>AM/PM</mat-label>
+            <mat-select formControlName="endAmPm">
+              <mat-option *ngFor="let ap of amPm" [value]="ap">{{ ap }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Price -->
         <mat-form-field appearance="outline">
           <mat-label>Price</mat-label>
           <input matInput type="number" formControlName="price">
         </mat-form-field>
-        <div>
-          <button mat-raised-button color="primary" (click)="updateShow()" [disabled]="editForm.invalid">Update</button>
-          <button mat-button (click)="editingShow = null">Cancel</button>
+
+        <!-- Buttons -->
+        <div style="grid-column: span 2; margin-top: 12px;">
+          <button mat-raised-button color="primary" (click)="createShow()" [disabled]="createForm.invalid">Create</button>
+          <button mat-button (click)="showCreateForm = false">Cancel</button>
         </div>
+
       </form>
     </mat-card-content>
   </mat-card>
 
-  <table mat-table [dataSource]="shows" class="mat-elevation-z8">
+  <!-- ================= EDIT SHOW ================= -->
+  <mat-card *ngIf="editingShow">
+    <mat-card-header>
+      <mat-card-title>Edit Show</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="editForm" class="form-grid">
+
+        <!-- Movie -->
+        <mat-form-field appearance="outline">
+          <mat-label>Movie</mat-label>
+          <mat-select formControlName="movieId" required>
+            <mat-option *ngFor="let movie of movies" [value]="movie._id">{{ movie.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Hall -->
+        <mat-form-field appearance="outline">
+          <mat-label>Hall</mat-label>
+          <mat-select formControlName="hallName" required>
+            <mat-option *ngFor="let hall of halls" [value]="hall.name">{{ hall.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Start Date & Time -->
+        <mat-form-field appearance="outline">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="editStartPicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="editStartPicker"></mat-datepicker-toggle>
+          <mat-datepicker #editStartPicker></mat-datepicker>
+        </mat-form-field>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <mat-form-field appearance="outline">
+            <mat-label>Hour</mat-label>
+            <mat-select formControlName="startHour">
+              <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Minute</mat-label>
+            <mat-select formControlName="startMinute">
+              <mat-option *ngFor="let m of minutes" [value]="m">{{ m < 10 ? '0' + m : m }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>AM/PM</mat-label>
+            <mat-select formControlName="startAmPm">
+              <mat-option *ngFor="let ap of amPm" [value]="ap">{{ ap }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- End Date & Time -->
+        <mat-form-field appearance="outline">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="editEndPicker" formControlName="endDate">
+          <mat-datepicker-toggle matSuffix [for]="editEndPicker"></mat-datepicker-toggle>
+          <mat-datepicker #editEndPicker></mat-datepicker>
+        </mat-form-field>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <mat-form-field appearance="outline">
+            <mat-label>Hour</mat-label>
+            <mat-select formControlName="endHour">
+              <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Minute</mat-label>
+            <mat-select formControlName="endMinute">
+              <mat-option *ngFor="let m of minutes" [value]="m">{{ m < 10 ? '0' + m : m }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>AM/PM</mat-label>
+            <mat-select formControlName="endAmPm">
+              <mat-option *ngFor="let ap of amPm" [value]="ap">{{ ap }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Price -->
+        <mat-form-field appearance="outline">
+          <mat-label>Price</mat-label>
+          <input matInput type="number" formControlName="price">
+        </mat-form-field>
+
+        <!-- Buttons -->
+        <div style="grid-column: span 2; margin-top: 12px;">
+          <button mat-raised-button color="primary" (click)="updateShow()" [disabled]="editForm.invalid">Update</button>
+          <button mat-button (click)="editingShow = null">Cancel</button>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ================= SHOWS TABLE ================= -->
+  <table mat-table [dataSource]="shows" class="mat-elevation-z8" style="margin-top: 24px;">
+
     <ng-container matColumnDef="movie">
       <th mat-header-cell *matHeaderCellDef>Movie</th>
       <td mat-cell *matCellDef="let show">{{ getMovieTitle(show) }}</td>
     </ng-container>
+
     <ng-container matColumnDef="hall">
       <th mat-header-cell *matHeaderCellDef>Hall</th>
       <td mat-cell *matCellDef="let show">{{ getHallName(show) }}</td>
     </ng-container>
+
     <ng-container matColumnDef="startTime">
-      <th mat-header-cell *matHeaderCellDef>Start Time</th>
+      <th mat-header-cell *matHeaderCellDef>Start</th>
       <td mat-cell *matCellDef="let show">{{ show.startTime | date:'short' }}</td>
     </ng-container>
+
     <ng-container matColumnDef="endTime">
-      <th mat-header-cell *matHeaderCellDef>End Time</th>
+      <th mat-header-cell *matHeaderCellDef>End</th>
       <td mat-cell *matCellDef="let show">{{ show.endTime | date:'short' }}</td>
     </ng-container>
+
     <ng-container matColumnDef="price">
       <th mat-header-cell *matHeaderCellDef>Price</th>
       <td mat-cell *matCellDef="let show">${{ show.price }}</td>
     </ng-container>
+
     <ng-container matColumnDef="isActive">
       <th mat-header-cell *matHeaderCellDef>Status</th>
       <td mat-cell *matCellDef="let show">
         <mat-slide-toggle [checked]="show.isActive" (change)="toggleShowStatus(show)"></mat-slide-toggle>
       </td>
     </ng-container>
+
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let show">
@@ -117,6 +262,6 @@
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
   </table>
 </div>
-

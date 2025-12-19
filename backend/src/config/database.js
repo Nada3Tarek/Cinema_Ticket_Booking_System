@@ -1,18 +1,32 @@
 const mongoose = require('mongoose');
 const startSeatReleaseScheduler = require('../utils/seatScheduler');
 
+class Database {
+  constructor() {
+    this.isConnected = false;
+  }
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    isConnected = true;
-    console.log('MongoDB connected');
-    startSeatReleaseScheduler(15); // 15 min timeout
+  async connect() {
+    if (this.isConnected) {
+      console.log('MongoDB already connected');
+      return mongoose.connection;
+    }
 
-  } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
+    try {
+     await mongoose.connect(process.env.MONGO_URI);
+
+      this.isConnected = true;
+      console.log('MongoDB connected');
+
+      startSeatReleaseScheduler(15);
+
+      return mongoose.connection;
+    } catch (error) {
+      console.error('Error connecting to MongoDB:', error);
+      process.exit(1);
+    }
   }
 }
 
-module.exports = connectDB;
+const databaseInstance = new Database();
+module.exports = databaseInstance;

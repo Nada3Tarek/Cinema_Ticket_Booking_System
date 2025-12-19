@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const UserFactory = require('../factories/user.factory');
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -10,17 +11,13 @@ const createToken = (id) =>
  * SIGNUP
  */
 const signup = async ({ email, password, adminKey }) => {
-  const role =
-    adminKey && adminKey === process.env.ADMIN_SECRET
-      ? 'ADMIN'
-      : 'CUSTOMER';
-
-  const user = await User.create({
+  const userData = UserFactory.createUser({
     email,
     password,
-    role
+    adminKey
   });
 
+  const user = await User.create(userData);
   const token = createToken(user._id);
 
   return { user, token };

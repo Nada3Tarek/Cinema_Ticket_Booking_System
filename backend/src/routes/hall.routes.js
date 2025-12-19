@@ -13,5 +13,7 @@ router.delete('/:hallId',
     requireAuth, isAdmin, 
     hallController.removeHall);
 router.get('/', requireAuth, isAdmin,hallController.getHalls);
+router.get('/available', requireAuth, isAdmin,hallController.getAvailableHalls); 
+
 
 module.exports = router;

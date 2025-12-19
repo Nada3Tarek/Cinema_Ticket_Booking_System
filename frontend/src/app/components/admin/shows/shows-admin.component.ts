@@ -13,15 +13,20 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   styleUrls: ['./shows-admin.component.scss']
 })
 export class ShowsAdminComponent implements OnInit {
+
   shows: Show[] = [];
   movies: Movie[] = [];
   halls: Hall[] = [];
-  loading = false;
   displayedColumns: string[] = ['movie', 'hall', 'startTime', 'endTime', 'price', 'isActive', 'actions'];
+
   createForm: FormGroup;
   editForm: FormGroup;
   editingShow: Show | null = null;
   showCreateForm = false;
+
+  hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  minutes = Array.from({ length: 60 }, (_, i) => i);
+  amPm = ['AM', 'PM'];
 
   constructor(
     private adminService: AdminService,
@@ -29,21 +34,42 @@ export class ShowsAdminComponent implements OnInit {
     private fb: FormBuilder,
     private errorHandler: ErrorHandlerService
   ) {
+    // CREATE FORM with split time inputs
     this.createForm = this.fb.group({
       movieId: ['', Validators.required],
-      hallId: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
+      hallName: ['', Validators.required],
+
+      startDate: ['', Validators.required],
+      startHour: ['', Validators.required],
+      startMinute: ['', Validators.required],
+      startAmPm: ['AM', Validators.required],
+
+      endDate: ['', Validators.required],
+      endHour: ['', Validators.required],
+      endMinute: ['', Validators.required],
+      endAmPm: ['AM', Validators.required],
+
       price: [0, [Validators.required, Validators.min(0)]]
     });
 
-    this.editForm = this.fb.group({
-      movieId: [''],
-      hallId: [''],
-      startTime: [''],
-      endTime: [''],
-      price: [0]
-    });
+    // EDIT FORM (will keep it as datetime-local for simplicity, can be updated similarly later)
+this.editForm = this.fb.group({
+  movieId: ['', Validators.required],
+  hallName: ['', Validators.required],
+
+  startDate: [null, Validators.required],
+  startHour: [null, Validators.required],
+  startMinute: [null, Validators.required],
+  startAmPm: ['AM', Validators.required],
+
+  endDate: [null, Validators.required],
+  endHour: [null, Validators.required],
+  endMinute: [null, Validators.required],
+  endAmPm: ['AM', Validators.required],
+
+  price: [0, [Validators.required, Validators.min(0)]]
+});
+
   }
 
   ngOnInit(): void {
@@ -52,86 +78,133 @@ export class ShowsAdminComponent implements OnInit {
     this.loadHalls();
   }
 
+  // ================= LOAD DATA =================
   loadShows(): void {
-    // Load shows from browse service
     this.browseService.browseMoviesWithShowtimes({ limit: 100 }).subscribe({
-      next: (response: any) => {
+      next: (res: any) => {
         this.shows = [];
-        response.data.forEach((movie: any) => {
-          if (movie.shows) {
-            this.shows.push(...movie.shows);
-          }
+        res.data.forEach((movie: any) => {
+          if (movie.shows) this.shows.push(...movie.shows);
         });
       },
-      error: (error) => {
-        this.errorHandler.handleError(error);
-      }
+      error: err => this.errorHandler.handleError(err)
     });
   }
 
   loadMovies(): void {
     this.browseService.browseMovies({ limit: 100 }).subscribe({
-      next: (response) => {
-        this.movies = response.data;
-      },
-      error: (error) => {
-        this.errorHandler.handleError(error);
-      }
+      next: res => this.movies = res.data,
+      error: err => this.errorHandler.handleError(err)
     });
   }
 
   loadHalls(): void {
-    // Note: There's no endpoint to get halls, so we'll need to get them from shows
-    // For now, we'll leave halls empty and admin can select from shows
-  }
 
+    this.adminService.getHalls().subscribe({
+      next: (res: any) => {
+        // backend may return { data: Hall[] } OR { halls: Hall[] } OR plain array
+        this.halls = (res?.data || res?.halls || res || []) as Hall[];
+      },
+      error: (error) => {
+        this.errorHandler.handleError(error);
+      },
+      complete: () => {
+    }
+    });
+  }
+  // ================= CREATE SHOW =================
   openCreateForm(): void {
     this.showCreateForm = true;
-    this.createForm.reset();
+    this.createForm.reset({ startAmPm: 'AM', endAmPm: 'AM' });
   }
 
   createShow(): void {
     if (this.createForm.invalid) return;
 
+    const startTime = this.buildDateTime(
+      this.createForm.value.startDate,
+      this.createForm.value.startHour,
+      this.createForm.value.startMinute,
+      this.createForm.value.startAmPm
+    );
+
+    const endTime = this.buildDateTime(
+      this.createForm.value.endDate,
+      this.createForm.value.endHour,
+      this.createForm.value.endMinute,
+      this.createForm.value.endAmPm
+    );
+
     const data: ShowCreateRequest = {
-      ...this.createForm.value,
-      startTime: new Date(this.createForm.value.startTime),
-      endTime: new Date(this.createForm.value.endTime)
+      movieId: this.createForm.value.movieId,
+      hallName: this.createForm.value.hallName,
+      startTime,
+      endTime,
+      price: this.createForm.value.price
     };
 
     this.adminService.createShow(data).subscribe({
-      next: () => {
-        this.errorHandler.showSuccess('Show created successfully');
+      next: res => {
+        this.errorHandler.showSuccess(res.message);
+        this.shows.unshift(res.show);
         this.showCreateForm = false;
-        this.loadShows();
       },
-      error: (error) => {
-        this.errorHandler.handleError(error);
-      }
+      error: err => this.errorHandler.handleError(err)
     });
   }
 
-  openEditForm(show: Show): void {
-    this.editingShow = show;
-    const movieId = typeof show.movieId === 'string' ? show.movieId : show.movieId._id;
-    const hallId = typeof show.hallId === 'string' ? show.hallId : show.hallId._id;
-    
-    this.editForm.patchValue({
-      movieId,
-      hallId,
-      startTime: new Date(show.startTime).toISOString().slice(0, 16),
-      endTime: new Date(show.endTime).toISOString().slice(0, 16),
-      price: show.price
-    });
+  private buildDateTime(date: string, hour: number, minute: number, amPm: string): Date {
+    let h = Number(hour);
+    if (amPm === 'PM' && h < 12) h += 12;
+    if (amPm === 'AM' && h === 12) h = 0;
+
+    const d = new Date(date);
+    d.setHours(h, Number(minute), 0, 0);
+    return d;
   }
+
+  // ================= EDIT SHOW =================
+openEditForm(show: Show): void {
+  this.editingShow = show;
+
+  const start = new Date(show.startTime);
+  const end = new Date(show.endTime);
+
+  // Convert hours to 12-hour format
+  const startHour12 = start.getHours() % 12 || 12;
+  const startAmPm = start.getHours() >= 12 ? 'PM' : 'AM';
+
+  const endHour12 = end.getHours() % 12 || 12;
+  const endAmPm = end.getHours() >= 12 ? 'PM' : 'AM';
+
+  this.editForm.patchValue({
+    movieId: typeof show.movieId === 'string' ? show.movieId : show.movieId._id,
+    hallName: typeof show.hallId === 'object' && show.hallId ? show.hallId.name : '',
+
+    startDate: start,         // must be a valid Date object
+    startHour: startHour12,   // number
+    startMinute: start.getMinutes(),
+    startAmPm: startAmPm,     // 'AM' or 'PM'
+
+    endDate: end,
+    endHour: endHour12,
+    endMinute: end.getMinutes(),
+    endAmPm: endAmPm,
+
+    price: show.price
+  });
+}
+
 
   updateShow(): void {
-    if (!this.editingShow || this.editForm.invalid) return;
+    if (!this.editingShow) return;
 
     const data: ShowUpdateRequest = {
-      ...this.editForm.value,
+      movieId: this.editForm.value.movieId,
+      hallName: this.editForm.value.hallName,
       startTime: this.editForm.value.startTime ? new Date(this.editForm.value.startTime) : undefined,
-      endTime: this.editForm.value.endTime ? new Date(this.editForm.value.endTime) : undefined
+      endTime: this.editForm.value.endTime ? new Date(this.editForm.value.endTime) : undefined,
+      price: this.editForm.value.price
     };
 
     this.adminService.updateShow(this.editingShow._id, data).subscribe({
@@ -140,48 +213,34 @@ export class ShowsAdminComponent implements OnInit {
         this.editingShow = null;
         this.loadShows();
       },
-      error: (error) => {
-        this.errorHandler.handleError(error);
-      }
+      error: err => this.errorHandler.handleError(err)
     });
   }
 
+  // ================= TOGGLE STATUS =================
   toggleShowStatus(show: Show): void {
     this.adminService.setShowStatus(show._id, !show.isActive).subscribe({
-      next: () => {
-        this.errorHandler.showSuccess(`Show ${show.isActive ? 'deactivated' : 'activated'}`);
-        this.loadShows();
-      },
-      error: (error) => {
-        this.errorHandler.handleError(error);
-      }
+      next: () => this.loadShows(),
+      error: err => this.errorHandler.handleError(err)
     });
   }
 
+  // ================= DELETE SHOW =================
   deleteShow(show: Show): void {
-    if (confirm(`Are you sure you want to delete this show?`)) {
-      this.adminService.deleteShow(show._id).subscribe({
-        next: () => {
-          this.errorHandler.showSuccess('Show deleted successfully');
-          this.loadShows();
-        },
-        error: (error) => {
-          this.errorHandler.handleError(error);
-        }
-      });
-    }
+    if (!confirm('Delete this show?')) return;
+
+    this.adminService.deleteShow(show._id).subscribe({
+      next: () => this.loadShows(),
+      error: err => this.errorHandler.handleError(err)
+    });
   }
 
+  // ================= HELPERS =================
   getMovieTitle(show: Show): string {
-    const movie = show.movieId;
-    if (typeof movie === 'string') return 'N/A';
-    return movie.title || 'N/A';
+    return typeof show.movieId === 'string' ? 'N/A' : show.movieId.title;
   }
 
   getHallName(show: Show): string {
-    const hall = show.hallId;
-    if (typeof hall === 'string') return hall;
-    return hall.name || 'N/A';
+    return typeof show.hallId === 'object' && show.hallId ? show.hallId.name : 'N/A';
   }
 }
-
