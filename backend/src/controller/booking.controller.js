@@ -54,7 +54,7 @@ exports.cancelBooking = async (req, res) => {
 exports.getShowIdForBooking = async (req, res) => {
   try {
     const { showId } = req.params;
-    const show = await BookingService.getShowWithSeats(showId);
+    const show = await bookingKeeper.getShowWithSeats(showId);
     res.json(show);
   } catch (err) {
     console.error('Error in getShowIdForBooking:', err);

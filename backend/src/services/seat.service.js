@@ -35,34 +35,29 @@ class SeatService {
   }
 
   static async releaseExpiredLocks(timeoutMinutes = 15) {
-    const expiry = new Date(Date.now() - timeoutMinutes * 60 * 1000);
+  const expiry = new Date(Date.now() - timeoutMinutes * 60 * 1000);
 
-    // await Seat.updateMany(
-    //   { status: 'LOCKED', lockedAt: { $lt: expiry } },
-    //   { $set: { status: 'AVAILABLE', lockedAt: null, lockedBy: null } }
-    // );
-
-  const seats = await Seat.find({
-    status: 'LOCKED',
-    lockedAt: { $lt: expiry }
+  // Find all pending bookings older than timeout
+  const expiredBookings = await Booking.find({
+    status: 'PENDING',
+    createdAt: { $lt: expiry }
   });
 
-  for (const seat of seats) {
-    // Check if the seat belongs to any PENDING booking
-    const activeBooking = await Booking.findOne({
-      seats: seat._id,
-      status: 'PENDING'
-    });
+  for (const booking of expiredBookings) {
+    // Expire booking
+    booking.status = 'EXPIRED';
+    await booking.save();
 
-    // Only release if no active pending booking exists
-    if (!activeBooking) {
-      await Seat.updateOne(
-        { _id: seat._id },
-        { status: 'AVAILABLE', lockedAt: null, lockedBy: null }
-      );
-    }
+    // Release seats
+    await Seat.updateMany(
+      { _id: { $in: booking.seats } },
+      { status: 'AVAILABLE', lockedAt: null, lockedBy: null }
+    );
+
+    console.log(`Booking ${booking._id} expired and seats released`);
   }
-  }
+}
+
 
   static async bookSeats(seatIds, userId) {
     const bookedSeats = await Seat.updateMany(
