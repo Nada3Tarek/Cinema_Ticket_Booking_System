@@ -24,11 +24,13 @@
             class="seat"
             [class.available]="seat.status === 'AVAILABLE'"
             [class.selected]="selectedSeats.has(seat.seatNumber)"
-            [class.unavailable]="seat.status === 'BOOKED'"
-            [disabled]="seat.status === 'BOOKED'"
+            [class.booked]="seat.status === 'BOOKED'"
+            [class.locked]="seat.status === 'LOCKED'"
+            [disabled]="seat.status === 'BOOKED' || seat.status === 'LOCKED'"
             (click)="toggleSeat(seat.seatNumber)">
             {{ seat.seatNumber }}
           </button>
+
         </div>
       </div>
 
@@ -40,6 +42,10 @@
         <div class="legend-item">
           <div class="seat selected"></div>
           <span>Selected</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat locked"></div>
+          <span>Locked</span>
         </div>
         <div class="legend-item">
           <div class="seat unavailable"></div>

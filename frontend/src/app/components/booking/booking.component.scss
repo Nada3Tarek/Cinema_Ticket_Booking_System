@@ -56,3 +56,38 @@
   margin-top: 16px;
 }
 
+/* Green = Available */
+.seat.available {
+  background-color: green;
+  color: white;
+}
+
+/* Blue = Selected */
+.seat.selected {
+  background-color: blue;
+  color: white;
+}
+
+/* Red = Booked */
+.seat.booked {
+  background-color: red;
+  color: white;
+  cursor: not-allowed;
+}
+
+/* Gray = Locked */
+.seat.locked {
+  background-color: gray;
+  color: white;
+  cursor: not-allowed;
+}
+.show-info,
+.summary,
+.legend {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}

@@ -16,38 +16,50 @@ class BookingKeeper {
     this.paymentService = paymentService;
   }
 
-  async reserveSeats(userId, showId, seatIds, totalPrice) {
+async reserveSeats(userId, showId, seatIds, totalPrice) {
 
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
+  const user = await User.findById(userId);
+  if (!user) throw new Error('User not found');
 
-    const show = await Show.findById(showId);
-    if (!show) throw new Error('Show not found');
+  const show = await Show.findById(showId);
+  if (!show) throw new Error('Show not found');
 
-    const seats = await Seat.find({ _id: { $in: seatIds }, showId });
-    if (seats.length !== seatIds.length) {
-      throw new Error('Some seats do not exist for this show');
-    }
-  const calculatedTotal = seats.reduce(
-      (sum, seat) => sum + seat.price,
-      0
-    );
+  const seats = await Seat.find({
+    showId,
+    seatNumber: { $in: seatIds }
+  });
 
-    if (calculatedTotal !== totalPrice) {
-      throw new Error(
-        `Invalid total price. Expected ${calculatedTotal}, received ${totalPrice}`
-      );
-    }
-    await this.seatAvailability.checkAvailability(showId, seatIds);
-
-    await this.seatService.lockSeats({ seatIds, userId });
-
-    const booking = await this.bookingCreation.createBooking(
-      userId, showId, seatIds, totalPrice
-    );
-
-    return booking;
+  if (seats.length !== seatIds.length) {
+    throw new Error('Some seats do not exist for this show');
   }
+
+  const calculatedTotal = seats.reduce(
+    (sum, seat) => sum + seat.price,
+    0
+  );
+
+  if (calculatedTotal !== totalPrice) {
+    throw new Error(
+      `Invalid total price. Expected ${calculatedTotal}, received ${totalPrice}`
+    );
+  }
+
+await this.seatAvailability.checkAvailability(showId, seatIds, userId);
+
+  const seatObjectIds = seats.map(seat => seat._id);
+
+  await this.seatService.lockSeats({
+    seatIds: seatObjectIds,
+    userId
+  });
+
+  return await this.bookingCreation.createBooking(
+    userId,
+    showId,
+    seatObjectIds,
+    totalPrice
+  );
+}
 
 
 async confirmBooking(bookingId, userId, method, extra = {}) {
@@ -124,6 +136,19 @@ async cancelBooking(bookingId) {
     if (!booking) throw new Error('Booking not found');
 
     return booking;
+  }
+
+  async getShowWithSeats(showId) {
+    const show = await Show.findById(showId)
+      .populate('hallId')
+      .populate('movieId');
+
+    if (!show) throw new Error('Show not found');
+
+    const seats = await Seat.find({ showId: show._id })
+      .select('seatNumber status price');
+
+    return { ...show.toObject(), seats };
   }
 }
 

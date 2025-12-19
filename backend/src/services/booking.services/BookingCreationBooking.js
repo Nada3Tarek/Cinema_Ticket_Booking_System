@@ -5,11 +5,11 @@ class BookingCreationBooking {
     return await Booking.findById(bookingId);
   }
 
-  async createBooking(userId, showId, seatNumbers, totalPrice) {
+  async createBooking(userId, showId, seatIds, totalPrice) {
     return Booking.create({
       userId,
       showId,
-      seats: seatNumbers,
+      seats: seatIds,
       totalPrice,
       status: 'PENDING'
     });
@@ -98,7 +98,7 @@ async expireBooking(bookingId) {
         select: 'startTime endTime hallId movieId',
         populate: [
           { path: 'movieId', select: 'title poster duration' },
-          { path: 'hallId', select: 'name' ,model: 'Hall'}
+          { path: 'hallId', select: 'name rows columns isActive' ,model: 'Hall'}
         ]
       });
 

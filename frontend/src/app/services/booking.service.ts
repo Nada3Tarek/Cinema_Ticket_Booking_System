@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   BookingReserveRequest,
   BookingConfirmRequest,
@@ -8,6 +8,7 @@ import {
   BookingListItem,
   BookingDetails
 } from '../models/booking.model';
+import { ShowWithDetails } from '../models/show.model';
 
 @Injectable({
   providedIn: 'root'
@@ -40,5 +41,22 @@ export class BookingService {
   getBookingDetails(bookingId: string): Observable<BookingDetails> {
     return this.http.get<BookingDetails>(`${this.API_BASE}/bookings/${bookingId}`);
   }
-}
 
+  /**
+   * Get show by ID, safely typed with ShowWithDetails
+   */
+  getShowById(showId: string): Observable<ShowWithDetails> {
+    return this.http.get<ShowWithDetails>(`${this.API_BASE}/bookings/show/${showId}`).pipe(
+      map((show) => {
+        // Ensure required properties exist
+        if (
+          !show.movieId || typeof show.movieId !== 'object' || !('_id' in show.movieId) ||
+          !show.hallId || typeof show.hallId !== 'object' || !('name' in show.hallId)
+        ) {
+          throw new Error('Show data incomplete');
+        }
+        return show;
+      })
+    );
+  }
+}

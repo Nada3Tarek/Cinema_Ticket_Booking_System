@@ -1,5 +1,5 @@
 const Seat = require('../models/Seat');
-const Booking = require('../models/Booking'); // add this
+const Booking = require('../models/Booking'); 
 
 class SeatService {
 
@@ -8,7 +8,10 @@ class SeatService {
 
     const unavailableSeats = await Seat.find({
       _id: { $in: seatIds },
-      status: { $in: ['LOCKED', 'BOOKED'] }
+      $or: [
+        { status: 'BOOKED' },
+        { status: 'LOCKED', lockedBy: { $ne: userId } }
+      ] 
     });
 
     if (unavailableSeats.length > 0) {

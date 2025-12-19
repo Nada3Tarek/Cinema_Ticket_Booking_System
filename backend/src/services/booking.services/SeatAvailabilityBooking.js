@@ -1,15 +1,23 @@
 const Seat = require('../../models/Seat');
 
 class SeatAvailabilityBooking {
-  async checkAvailability(showId, seatNumbers) {
-    const seats = await Seat.find({
+  async checkAvailability(showId, seatNumbers, userId) {
+    const unavailableSeats = await Seat.find({
       showId,
       seatNumber: { $in: seatNumbers },
-      status: { $ne: 'AVAILABLE' }
+      $or: [
+        { status: 'BOOKED' },
+        { status: 'LOCKED', lockedBy: { $ne: userId } }
+      ]
     });
-    if (seats.length > 0) throw new Error('Some seats are not available');
+
+    if (unavailableSeats.length > 0) {
+      throw new Error('Some seats are already taken');
+    }
+
     return true;
   }
 }
+
 
 module.exports = SeatAvailabilityBooking;

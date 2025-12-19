@@ -6,6 +6,7 @@ const { requireAuth } = require('../middlewares/auth.middleware');
 router.post('/reserve',requireAuth, BookingController.reserveSeats);
 router.post('/confirm', requireAuth,BookingController.confirmBooking);
 router.post('/cancel',requireAuth, BookingController.cancelBooking);
+router.get('/show/:showId',requireAuth, BookingController.getShowIdForBooking);
 
 router.get('/user',requireAuth, BookingController.getUserBookings);
 router.get('/pending',requireAuth, BookingController.getPendingBookings);

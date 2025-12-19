@@ -9,6 +9,7 @@ import { SeatInfo, SeatStatus } from '../../models/seat.model';
 import { BookingReserveRequest, BookingConfirmRequest } from '../../models/booking.model';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { AuthService } from '../../services/auth.service';
+import { Movie } from '../../models/movie.model';
 
 @Component({
   selector: 'app-booking',
@@ -18,6 +19,7 @@ import { AuthService } from '../../services/auth.service';
 export class BookingComponent implements OnInit {
   show: ShowWithDetails | null = null;
   hall: Hall | null = null;
+  movie: Movie | null = null;
   seatLayout: SeatInfo[][] = [];
   selectedSeats: Set<string> = new Set();
   unavailableSeats: Set<string> = new Set();
@@ -36,12 +38,12 @@ export class BookingComponent implements OnInit {
     return Array.from(this.selectedSeats).join(', ');
   }
 
-  getMovieTitle(): string {
-    if (!this.show) return 'N/A';
-    const movie = this.show.movieId;
-    if (typeof movie === 'string') return 'N/A';
-    return movie.title || 'N/A';
-  }
+  // getMovieTitle(): string {
+  //   if (!this.show) return 'N/A';
+  //   const movie = this.show.movieId;
+  //   if (typeof movie === 'string') return 'N/A';
+  //   return movie.title || 'N/A';
+  // }
 
   constructor(
     private route: ActivatedRoute,
@@ -61,81 +63,126 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    const showId = this.route.snapshot.paramMap.get('id');
-    if (showId) {
-      this.loadShowDetails(showId);
+ngOnInit(): void {
+  const showId = this.route.snapshot.paramMap.get('id');
+  const state = history.state;
+
+  this.show = state?.show ?? null;
+  this.movie = state?.movie ?? null;
+
+  // Case 1️⃣: show passed from navigation AND hall has layout
+  if (
+    this.show &&
+    typeof this.show.hallId === 'object' &&
+    (this.show.hallId as Hall).rows &&
+    (this.show.hallId as Hall).columns
+  ) {
+    this.hall = this.show.hallId as Hall;
+
+    if (!Array.isArray(this.show.bookedSeats)) {
+      this.show.bookedSeats = [];
     }
+
+    if (!this.movie && typeof this.show.movieId === 'object') {
+      this.movie = this.show.movieId as Movie;
+    }
+
+    this.generateSeatLayout();
+    return;
   }
+
+  // Case 2️⃣: navigation state incomplete → fetch from backend
+  if (showId) {
+    this.loadShowDetails(showId);
+    return;
+  }
+
+  // Case 3️⃣: nothing available
+  this.errorHandler.handleError({ message: 'Show not found' });
+  this.router.navigate(['/']);
+}
+
+
+
+
+
+getMovieTitle(): string {
+  return this.movie?.title || 'N/A';
+}
 
   loadShowDetails(showId: string): void {
-    this.loading = true;
-    // Load show details from browse service
-    this.browseService.browseMoviesWithShowtimes({}).subscribe({
-      next: (response) => {
-        let foundShow: Show | null = null;
-        for (const movie of response.data) {
-          foundShow = movie.shows?.find(s => s._id === showId) || null;
-          if (foundShow) break;
-        }
+  this.loading = true;
 
-        if (foundShow && typeof foundShow.hallId !== 'string' && typeof foundShow.movieId !== 'string') {
-          this.show = foundShow as ShowWithDetails;
-          this.hall = foundShow.hallId as Hall;
-          this.generateSeatLayout();
-        } else {
-          this.errorHandler.handleError({ message: 'Show not found' });
-          this.router.navigate(['/']);
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.loading = false;
-        this.errorHandler.handleError(error);
+  this.bookingService.getShowById(showId).subscribe({
+    next: (show) => {
+      this.show = show;
+      if (typeof show.hallId !== 'string') {
+        this.hall = show.hallId as Hall;
+        this.generateSeatLayout();
+      } else {
+        this.errorHandler.handleError({ message: 'Hall info missing' });
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: (err) => {
+      this.loading = false;
+      this.errorHandler.handleError(err);
+      this.router.navigate(['/']);
+    }
+  });
+}
+
 
   generateSeatLayout(): void {
-    if (!this.hall || !this.show) return;
+  if (!this.hall || !this.show) return;
 
-    const layout: SeatInfo[][] = [];
-    const rows = this.hall.rows;
-    const cols = this.hall.columns;
+  const layout: SeatInfo[][] = [];
+  const rows = this.hall.rows;
+  const cols = this.hall.columns;
 
-    // Mark booked seats as unavailable
-    const bookedSeatsSet = new Set(this.show.bookedSeats || []);
+  // 🔹 Use backend seat info
+  const seatsFromBackend = (this.show as any).seats as {
+    seatNumber: string;
+    status: SeatStatus;
+    price: number;
+  }[] || [];
 
-    for (let row = 0; row < rows; row++) {
-      const rowLetter = String.fromCharCode(65 + row);
-      const seatRow: SeatInfo[] = [];
+  // Build a map of seatNumber -> status
+  const seatStatusMap = new Map<string, SeatStatus>();
+  seatsFromBackend.forEach(seat => seatStatusMap.set(seat.seatNumber, seat.status));
 
-      for (let col = 1; col <= cols; col++) {
-        const seatNumber = `${rowLetter}${col}`;
-        const isBooked = bookedSeatsSet.has(seatNumber);
-        
-        const seatInfo: SeatInfo = {
-          id: `${this.show._id}-${seatNumber}`, // Temporary ID
-          seatNumber,
-          status: isBooked ? 'BOOKED' : 'AVAILABLE',
-          price: this.show.price,
-          row,
-          col
-        };
+  for (let row = 0; row < rows; row++) {
+    const rowLetter = String.fromCharCode(65 + row);
+    const seatRow: SeatInfo[] = [];
 
-        seatRow.push(seatInfo);
-        this.seatMap.set(seatNumber, seatInfo);
+    for (let col = 1; col <= cols; col++) {
+      const seatNumber = `${rowLetter}${col}`;
+      const status = seatStatusMap.get(seatNumber) || 'AVAILABLE';
+      
+      const seatInfo: SeatInfo = {
+        id: `${this.show._id}-${seatNumber}`,
+        seatNumber,
+        status,
+        price: this.show.price,
+        row,
+        col
+      };
 
-        if (isBooked) {
-          this.unavailableSeats.add(seatNumber);
-        }
+      seatRow.push(seatInfo);
+      this.seatMap.set(seatNumber, seatInfo);
+
+      if (status !== 'AVAILABLE') {
+        this.unavailableSeats.add(seatNumber);
       }
-
-      layout.push(seatRow);
     }
 
-    this.seatLayout = layout;
+    layout.push(seatRow);
   }
+
+  this.seatLayout = layout;
+  console.log('seatLayout generated:', this.seatLayout);
+}
+
 
   toggleSeat(seatNumber: string): void {
     if (this.unavailableSeats.has(seatNumber)) {

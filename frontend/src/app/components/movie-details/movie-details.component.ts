@@ -4,10 +4,18 @@ import { BrowseService } from '../../services/browse.service';
 import { ReviewService } from '../../services/review.service';
 import { BookingService } from '../../services/booking.service';
 import { Movie } from '../../models/movie.model';
-import { Show } from '../../models/show.model';
+import { Show, ShowWithDetails } from '../../models/show.model';
 import { Review, ReviewCreateRequest } from '../../models/review.model';
 import { ErrorHandlerService } from '../../core/services/error-handler.service';
 import { AuthService } from '../../services/auth.service';
+import { Hall } from '../../models/hall.model';
+
+type SeatBackend = {
+  seatNumber: string;
+  status: 'AVAILABLE' | 'LOCKED' | 'BOOKED';
+  price: number;
+  _id: string;
+};
 
 @Component({
   selector: 'app-movie-details',
@@ -107,10 +115,50 @@ export class MovieDetailsComponent implements OnInit {
     });
   }
 
-  selectShow(show: Show): void {
-    // Booking flow starts from show id (seat layout later loaded from booking/show details screens)
-    this.router.navigate(['/booking', (show as any)._id]);
+selectShow(show: Show): void {
+  if (!show._id) {
+    this.errorHandler.handleError({ message: 'Invalid show selected' });
+    return;
   }
+
+  const hall: Hall = typeof show.hallId === 'object'
+    ? (show.hallId as Hall)
+    : {
+        _id: 'temp',
+        name: 'Hall 1',
+        rows: 5,
+        columns: 8,
+        isActive: true
+      };
+
+  const movie: Movie = typeof show.movieId === 'object'
+    ? (show.movieId as Movie)
+    : this.movie!;
+
+  const bookedSeats: string[] = Array.isArray((show as any).seats)
+    ? (show as any).seats
+        .filter((seat: { seatNumber: string; status: string }) =>
+          seat.status === 'BOOKED' || seat.status === 'LOCKED'
+        )
+        .map((seat: { seatNumber: string; status: string }) => seat.seatNumber)
+    : [];
+
+  const fullShow: ShowWithDetails = {
+    ...show,
+    hallId: hall,
+    movieId: movie,
+    bookedSeats
+  };
+
+  this.router.navigate(['/booking', show._id], { state: { show: fullShow, movie } });
+}
+
+
+
+
+
+
+
 
   submitReview(): void {
     if (!this.movie) return;
