@@ -1,21 +1,6 @@
 const { Review, ReviewDecorator } = require('../models/review');
 const Movie = require('../models/Movie');
-
-class ReviewSortingStrategy {
-  sort(reviews) { throw new Error('sort method should be implemented'); }
-}
-
-class SortByRating extends ReviewSortingStrategy {
-  sort(reviews) { return reviews.sort((a,b) => b.rating - a.rating); }
-}
-
-class SortByDate extends ReviewSortingStrategy {
-  sort(reviews) { return reviews.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); }
-}
-
-class SortByPopularity extends ReviewSortingStrategy {
-  sort(reviews) { return reviews.sort((a,b) => b.likeCount - a.likeCount); }
-}
+const ReviewSortingContext = require("../services/review.sorting.services/ReviewSortingContext");
 
 class ReviewService {
   async createReview(data) {
@@ -26,26 +11,22 @@ class ReviewService {
     return decorated.getReviewDetails();
   }
 
-  async getReviews({ movieId, page = 1, limit = 10, sortBy = 'date' }) {
-    const skip = (page - 1) * limit;
-    let reviews = await Review.find({ movieId }).skip(skip).limit(limit);
+ async getReviews({ movieId, page = 1, limit = 10, sortBy = "date" }) {
+  const skip = (page - 1) * limit;
 
-    let strategy;
-    switch(sortBy) {
-      case 'rating': strategy = new SortByRating(); break;
-      case 'popularity': strategy = new SortByPopularity(); break;
-      default: strategy = new SortByDate();
-    }
+  let reviews = await Review.find({ movieId })
+    .skip(skip)
+    .limit(limit);
 
-    const sortedReviews = strategy.sort(reviews);
+  const sortingContext = new ReviewSortingContext(sortBy);
+  const sortedReviews = sortingContext.sort(reviews);
 
-    const avgRating = reviews.length > 0
-      ? reviews.reduce((sum,r) => sum + r.rating, 0) / reviews.length
-      : 0;
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
 
-    return { avgRating, reviews: sortedReviews };
-  }
-
+  return { avgRating, reviews: sortedReviews };
+}
   async addLike(reviewId) {
     const review = await Review.findById(reviewId);
     if (!review) throw new Error('Review not found');
@@ -77,4 +58,5 @@ class ReviewService {
   }
 }
 
-module.exports = { ReviewService, SortByRating, SortByDate, SortByPopularity };
+module.exports = { ReviewService };
+
